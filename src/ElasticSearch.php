@@ -85,7 +85,7 @@ class ElasticSearch
             ],
         ];
 
-        if($this->client->indices()->exists(['index' => $index])) {
+        if($this->client->indices()->exists(['index' => $index])->asBool() === true) {
             return false;
         }
 
@@ -102,7 +102,7 @@ class ElasticSearch
 
     private function addIndexes(string $index, array &$mappings): void
     {
-        $properties = (array) config('elasticsearch.indexes');
+        $properties = (array) config('elastic-search.indexes');
         if(!array_key_exists($index, $properties)) {
             throw new HttpException(500, 'Index not found, did you forget to add it to elasticsearch.php?');
         }
@@ -110,7 +110,7 @@ class ElasticSearch
         $mappings['properties'] = $properties[$index];
     }
 
-    public function add(string $index, array $data, int $id, array $nested): bool
+    public function add(string $index, array $data, int $id, array $nested = []): bool
     {
         $params = [
             'index' => $index,
@@ -121,7 +121,7 @@ class ElasticSearch
        return $this->client->index($params)->asBool();
     }
 
-    private function getAddData(array $data, array $nested = []): array
+    private function getAddData(array $data, array $nested): array
     {
         if($nested === []) {
             return $data;
